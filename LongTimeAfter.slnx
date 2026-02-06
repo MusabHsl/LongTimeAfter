@@ -72,6 +72,7 @@
   <Project Path="Unity.VisualScripting.State.csproj" />
   <Project Path="HFDownloader.csproj" />
   <Project Path="Unity.InternalAPIEditorBridge.001.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.AI.Navigation.Updater.csproj" />
   <Project Path="Unity.AI.Generators.Redux.csproj" />
   <Project Path="Unity.AI.Assistant.Agent.Dynamic.Extension.Editor.csproj" />
@@ -116,7 +117,6 @@
   <Project Path="Unity.AI.Toolkit.Utility.csproj" />
   <Project Path="Unity.AI.Assistant.Bridge.Editor.csproj" />
   <Project Path="Unity.AI.Pbr.Srp.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.Serialization.Editor.csproj" />
   <Project Path="Unity.AI.Animate.Motion.Runtime.csproj" />
   <Project Path="Unity.InputSystem.DocCodeSamples.csproj" />
