@@ -97,6 +97,7 @@
   <Project Path="Unity.AI.Assistant.AssetGenerators.Editor.csproj" />
   <Project Path="Unity.Mathematics.Editor.csproj" />
   <Project Path="Unity.VisualScripting.SettingsProvider.Editor.csproj" />
+  <Project Path="UnityEditor.UI.Analytics.csproj" />
   <Project Path="Unity.AI.Toolkit.GenerationContextMenu.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Unity.2D.Common.Runtime.csproj" />
@@ -104,7 +105,6 @@
   <Project Path="Unity.AppUI.Editor.csproj" />
   <Project Path="Unity.Settings.Editor.csproj" />
   <Project Path="Unity.InputSystem.TestFramework.csproj" />
-  <Project Path="Unity.CollabProxy.Editor.csproj" />
   <Project Path="Unity.ShaderGraph.Utilities.csproj" />
   <Project Path="Unity.AI.Toolkit.Async.csproj" />
   <Project Path="Unity.VisualScripting.Shared.Editor.csproj" />
@@ -113,6 +113,7 @@
   <Project Path="Unity.2D.Enhancers.Editor.AIBridge.csproj" />
   <Project Path="Unity.AppUI.Undo.csproj" />
   <Project Path="Unity.AI.Generators.Contexts.csproj" />
+  <Project Path="Unity.CollabProxy.Editor.csproj" />
   <Project Path="Unity.RenderPipeline.Universal.ShaderLibrary.csproj" />
   <Project Path="Unity.AI.Toolkit.Utility.csproj" />
   <Project Path="Unity.AI.Assistant.Bridge.Editor.csproj" />
@@ -123,7 +124,6 @@
   <Project Path="Unity.RenderPipelines.Universal.Shaders.csproj" />
   <Project Path="Unity.RenderPipelines.Core.Runtime.Shared.csproj" />
   <Project Path="Unity.InternalAPIEngineBridge.004.csproj" />
-  <Project Path="Unity.2D.Sprite.AIIntegration.Editor.csproj" />
   <Project Path="Unity.InferenceEngine.MacBLAS.csproj" />
   <Project Path="Unity.AppUI.InternalAPIBridge.csproj" />
   <Project Path="Unity.AI.Toolkit.GenerationObjectPicker.csproj" />

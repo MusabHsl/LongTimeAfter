@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public 
@@ -7,7 +8,7 @@ class ProductPlantController : MonoBehaviour
     private bool isReadyToPick;
     private Vector3 originalScale;
 
-    [SerializeField] private GameObject boxGO;
+    [SerializeField] private ProductData productData;
     private BagController bagController;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -29,10 +30,9 @@ class ProductPlantController : MonoBehaviour
             Debug.Log("Fideye dokunuldu");
             isReadyToPick = false;
             bagController=other.GetComponent<BagController>();
-            bagController.AddProductToBag(boxGO);
-
+            bagController.AddProductToBag(productData);
+            StartCoroutine(ProductPicked());
         }
-        StartCoroutine(ProductPicked());
     }
 
     IEnumerator ProductPicked()

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using Unity.VisualScripting;
@@ -6,7 +7,7 @@ using UnityEngine.InputSystem;
 public class BagController : MonoBehaviour
 {
     [SerializeField] private Transform bag;
-    public List<GameObject>productList;
+    public List<ProductData>productDataList;
     private Vector3 productSize;
     
 
@@ -21,18 +22,23 @@ public class BagController : MonoBehaviour
         
     }
 
-    private void OnTriggerEnter(Collider other)
+   private void OnTriggerEnter(Collider other)
+{
+    Debug.Log("Trigger çalıştı: " + other.tag); // ← BU SATIRI EKLE
+    if(other.CompareTag("ShopPoint"))
     {
-        if (other.CompareTag("Respawn"))
+        Debug.Log("ShopPoint'e çarpıldı!"); // ← BU SATIRI DA EKLE
+        for(int i = productDataList.Count-1; i>=0; i--)
         {
-            Debug.Log("Kube carpildi");
-            AddProductToBag(other.gameObject); 
+            Destroy(bag.transform.GetChild(i).gameObject);
+            productDataList.RemoveAt(i);
         }
     }
+}
 
-    public void AddProductToBag(GameObject product)
+    public void AddProductToBag(ProductData productData)
     {
-        GameObject boxProduct= Instantiate(product,Vector3.zero,Quaternion.identity);
+        GameObject boxProduct= Instantiate(productData.productPrefab,Vector3.zero,Quaternion.identity);
         boxProduct.transform.SetParent(bag,true);
 
         CalculateObjectSize(boxProduct);
@@ -41,11 +47,11 @@ public class BagController : MonoBehaviour
         boxProduct.transform.localRotation = Quaternion.identity; // Sırtımızda yamuk durmaması için.
         boxProduct.transform.localPosition = Vector3.zero; // Sırtımızda yamuk durmaması için.
         boxProduct.transform.localPosition=new Vector3(0,yPosition,0);
-        productList.Add(boxProduct);
+        productDataList.Add(productData);
     }
     private float CalculatNewPositionOfBox()
     {
-    float newYpos=productSize.y * productList.Count;
+    float newYpos=productSize.y * productDataList.Count;
     return newYpos;
     }
 
@@ -57,6 +63,5 @@ public class BagController : MonoBehaviour
             productSize=renderer.bounds.size;
         }
     }
-    
 
 }
