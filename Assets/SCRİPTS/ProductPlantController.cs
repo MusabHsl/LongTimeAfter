@@ -27,11 +27,25 @@ class ProductPlantController : MonoBehaviour
     {
         if (other.CompareTag("Player") && isReadyToPick)
         {
-            Debug.Log("Fideye dokunuldu");
-            isReadyToPick = false;
-            bagController=other.GetComponent<BagController>();
-            bagController.AddProductToBag(productData);
-            StartCoroutine(ProductPicked());
+            bagController = other.GetComponent<BagController>();
+            
+            if (bagController != null)
+            {
+                bool hasSpace = bagController.IsEmptySpace();
+                Debug.Log("Karakter dokundu. Boş yer var mı: " + hasSpace);
+
+                if (hasSpace)
+                {
+                    Debug.Log("Fidan toplama başlatılıyor...");
+                    isReadyToPick = false;
+                    bagController.AddProductToBag(productData);
+                    StartCoroutine(ProductPicked());
+                }
+                else
+                {
+                    Debug.Log("Fidan ALINMADI çünkü çanta dolu.");
+                }
+            }
         }
     }
 

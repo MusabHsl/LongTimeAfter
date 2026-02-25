@@ -14,10 +14,13 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private int MoveSpeed;
     [SerializeField] private float rotationSpeed = 10f;
 
+    private float gravity = -9.81f;
+    private float verticalVelocity;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        characterController =GetComponent<CharacterController>();
+        characterController = GetComponent<CharacterController>();
     }
 
     // Update is called once per frame
@@ -28,25 +31,46 @@ public class PlayerMovement : MonoBehaviour
 
     private void MovePlayer()
     {
-        moveVector=joystickController.GetMovePosition() * MoveSpeed * Time.deltaTime / Screen.width;
-        moveVector.z=moveVector.y; //burada yapılanın amacı joystikteki y değeri bizim karakterimizi z doğrultusunda etkilesin ve eylem yapsın.
-        moveVector.y=0;
-        
-         // ---- HATIRLADIĞIN KOD BU OLABİLİR ----
-        if (moveVector.magnitude > 0)
+        if (joystickController == null)
         {
-            //transform.forward = moveVector; // Eski sert dönüş
-            // Yumuşak dönüş:
+            return;
+        }
+
+        Vector3 joystickDirection = joystickController.GetMovePosition();
+        
+        // Yerçekimi hesaplama
+        if (characterController.isGrounded)
+        {
+            verticalVelocity = -0.5f; // Yere yapışık kalması için küçük bir kuvvet
+        }
+        else
+        {
+            verticalVelocity += gravity * Time.deltaTime;
+        }
+
+        if (joystickDirection.magnitude > 0)
+        {
+            moveVector = joystickDirection * MoveSpeed * Time.deltaTime / Screen.width;
+            moveVector.z = moveVector.y; 
+            moveVector.y = 0;
+            
+            // Dönüş mantığı
             transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(moveVector), Time.deltaTime * rotationSpeed);
         }
-        // --------------------------------------
+        else
+        {
+            moveVector = Vector3.zero;
+        }
+
+        // Yerçekimini ekle
+        moveVector.y = verticalVelocity;
         
         characterController.Move(moveVector);
 
-        // Animasyon kontrolünü geri getirdik (Kurs mantığına uygun olarak)
+        // Animasyon kontrolü
         if (playerAnimator != null)
         {
-            float speed = moveVector.magnitude;
+            float speed = joystickDirection.magnitude;
             playerAnimator.ManageAnimations(speed);
         }
     }

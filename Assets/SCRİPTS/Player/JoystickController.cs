@@ -51,6 +51,8 @@ public class JoystickController : MonoBehaviour
     {
         if (Pointer.current != null)
         {
+            if (joystickOutline == null || joystickButton == null) return;
+
             // Şu anki pozisyonu al
             Vector3 currentPosition = Pointer.current.position.ReadValue();
             Vector3 direction = currentPosition - tapPosition;

@@ -71,3 +71,6 @@ crashlytics-build.properties
 # OS generated
 .DS_Store
 Thumbs.db
+
+# Build logs and large temp files
+build.log
