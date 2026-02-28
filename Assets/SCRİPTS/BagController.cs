@@ -17,24 +17,40 @@ public class BagController : MonoBehaviour
         SetMaxTextOff(); 
     }
 
-    private void OnTriggerEnter(Collider other) //player shoppointe temas ederse bagi removla
-    {
-        if (other.CompareTag("ShopPoint"))
-        {
-            int childCount = bag.childCount;
-            productDataList.Clear();
 
-            for (int i = childCount - 1; i >= 0; i--)
-            {
-                GameObject toDestroy = bag.GetChild(i).gameObject;
-                Destroy(toDestroy);
-            }
-            
-            SetMaxTextOff();
-            Debug.Log("Çanta boşaltıldı.");
+
+  private void OnTriggerEnter(Collider other)
+{
+    if (other.CompareTag("ShopPoint"))
+    {
+        // 1. Önce paraları veriyoruz (Liste hala doluyken)
+        for (int i = 0; i < productDataList.Count; i++)
+        {
+           SellProductToShop(productDataList[i]); 
         }
+        // 2. Paraları aldık, şimdi listeyi silebiliriz
+        productDataList.Clear();
+        // 3. Görselleri yok et (Senin mevcut döngün)
+        int childCount = bag.childCount;
+        for (int i = childCount - 1; i >= 0; i--)
+        {
+            Destroy(bag.GetChild(i).gameObject);
+        }
+        
+        SetMaxTextOff();
+        Debug.Log("Çanta boşaltıldı ve paralar alındı.");
+    }
+}
+// 4. Çağırdığın o fonksiyonu buraya tanımlıyoruz ki CashManager ile konuşsun
+private void SellProductToShop(ProductData data)
+{
+    if (CashManager.instance != null)
+    {
+        CashManager.instance.ExChangeProduct(data);
     }
 
+
+}
 
 
     public void AddProductToBag(ProductData productData)  
@@ -44,13 +60,7 @@ public class BagController : MonoBehaviour
         if (productDataList.Count >= maxBagCapacity) return; 
 
 
-        // Kapasite kontrolü
-        if (productDataList.Count >= maxBagCapacity)
-        {
-            ControlBagCapacity();
-            return;
-        }
-
+        //bura ise üsstteki şart sağlanırsa assetler ınstantie edilip kasalara spawnlanır.
         GameObject boxProduct = Instantiate(productData.productPrefab, Vector3.zero, Quaternion.identity);
         
         CalculateObjectSize(boxProduct);
@@ -70,6 +80,7 @@ public class BagController : MonoBehaviour
         ControlBagCapacity();
     }
 
+   
 
 
     private float CalculateNewPositionOfBox()
