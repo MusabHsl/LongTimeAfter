@@ -10,6 +10,8 @@ class ProductPlantController : MonoBehaviour
 
     [SerializeField] private ProductData productData;
     private BagController bagController;
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -49,7 +51,7 @@ class ProductPlantController : MonoBehaviour
         }
     }
 
-    IEnumerator ProductPicked()
+    IEnumerator ProductPicked() //fide alındıktan sonra küçülme ve büyüme animasyonu leantween kütüphanesi ile
     {
     Vector3 targetscale=originalScale/3;
     transform.gameObject.LeanScale(targetscale,1f);

@@ -41,3 +41,58 @@ Oyunumuzda paranın akışını denetleyen 3 temel parça var:
 3.  `ProductData` dosyalarında `productPrice` değeri sıfırdan büyük olmalı.
 
 Bu sistem sayesinde oyunun ekonomisi tıkır tıkır işleyecektir! 🚀
+
+---
+
+## 🗓️ 02.03.2026 - Bugün Ne Yaptık?
+
+### 📋 Genel Sıralama (Ne Yaptık?)
+
+1. **Sahnede kilitli satın alma alanları oluşturduk** — Lahana ve domates tarlaları için `CabbageLockedUnit` ve `TomatoLockedUnit` objeleri oluşturuldu. Her birinin altına `LockedObjects` (çerçeve, coin ikonu, fiyat yazısı) ve `TriggerZone` (collider + script) eklendi.
+
+2. **CashManager'a para harcama sistemi ekledik** — `SpendCoin` ve `TryBuyThisUnit` metodları yazıldı. Player trigger'a girince coin yeterliyse harcama yapılacak şekilde `LockedUnitController` scripti oluşturuldu.
+
+3. **CashManager'daki 3 hatayı düzelttik** — Yeni yazılan metodlarda syntax ve mantık hataları vardı, tek tek giderildi.
+
+4. **TriggerZone'u sahnede konumlandırdık** — Boş bir GameObject, Box Collider (Is Trigger ✅) eklendi. Dükkânın önüne yerleştirildi. OnTriggerEnter'ın yalnızca Collider'ın üzerinde olduğu objede çalıştığını öğrendik, script TriggerZone'a taşındı.
+
+5. **Satın alma çalıştı — coin azaldı, LockedObjects kapandı** ✅
+
+6. **UnlockedObjects içindeki tarlalar görünmedi — hata avcılığı yaptık** — Debug.Log ekleyerek script'in çalıştığını doğruladık. Sorunun Unity SetActive kuralları ve hiyerarşi konumundan kaynaklandığını bulduk.
+
+---
+
+### 🔧 Düzeltilen Hatalar
+
+**CashManager.cs — 3 hata:**
+
+| # | Hata | Çözüm |
+|---|------|--------|
+| 1 | `SpendCoin()` içinde `price` parametresi yoktu | `SpendCoin(int price)` yapıldı |
+| 2 | `GetCoins()` metodu yoktu | `public int GetCoins()` eklendi |
+| 3 | `TryBuyThisUnit` bazı durumlarda `bool` dönmüyordu | `if` dışına `return false` eklendi |
+
+Ayrıca `Destroy(instance)` → `Destroy(gameObject)` düzeltildi (Singleton'da yanlış obje yok ediliyordu).
+
+---
+
+### 🔑 Bugün Öğrenilen Kritik Unity Kuralları
+
+**1. Child kapatmak ≠ Parent kapatmak**
+- Parent'ı kapatmak → tüm child'ları da kapatır ✅
+- Parent'ı açmak → kendi başına kapatılmış child'ları AÇMAZ ❌
+- **Kural:** Her zaman child'ı açık bırak, sadece parent'ı kapat/aç!
+
+**2. SetActive sırası önemli!**
+- TriggerZone LockedObjects'in içindeyse; LockedObjects kapanınca TriggerZone da kapanır, script yarım kalır.
+- **Kural:** Önce UnlockedObjects'i aç (`SetActive(true)`), sonra LockedObjects'i kapat!
+
+**3. OnTriggerEnter nerede tetiklenir?**
+- Sadece Collider'ın bulunduğu objede çalışır. Script ve Collider aynı objede olmalı!
+
+---
+
+### ⚠️ Çözülemeyen / Sonraya Bırakılan Problem
+- `UnlockedObjects`, `CabbageLockedUnit` içine alınınca tarlalar görünmüyor.
+- **Geçici durum:** Şimdilik çalışır halde bırakıldı, prefab konusu sonraya bırakıldı.
+- **Yapılacak:** `lockedunit` referansının tam olarak neye bağlı olduğu kontrol edilecek (LockedObjects mı, CabbageLockedUnit mi?).

@@ -24,6 +24,27 @@ public class CashManager : MonoBehaviour
         AddCoin(productData.productPrice);
     }
 
+    private void SpendCoin(int price)
+    {
+        coins-=price;
+        DisplayCoins();
+    }
+
+    public int GetCoins()
+    {
+        return coins;
+    }
+
+    public bool TryBuyThisUnit(int price) //Para harca 
+    {
+        if(GetCoins()>=price)
+        {
+           SpendCoin(price);
+           return true;
+        }
+        return false;
+    }
+
     public void AddCoin(int price)
     {
         coins+=price;
