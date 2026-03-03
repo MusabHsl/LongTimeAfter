@@ -44,55 +44,77 @@ Bu sistem sayesinde oyunun ekonomisi tıkır tıkır işleyecektir! 🚀
 
 ---
 
-## 🗓️ 02.03.2026 - Bugün Ne Yaptık?
+## 🥐 Pastane (Bakery) Sistemi
 
-### 📋 Genel Sıralama (Ne Yaptık?)
+### Özet: Ne Yaptık?
+Oyuna bir pastane binası (3D asset) ve baca ekledik. Pastanenin önüne gelen oyuncu, sırtındaki ürünleri (domates gibi) otomatik olarak teslim eder. Bina üstünde bir 3D TextMeshPro ile "3/5 domates teslim edildi" gibi bir gösterge çalışır.
 
-1. **Sahnede kilitli satın alma alanları oluşturduk** — Lahana ve domates tarlaları için `CabbageLockedUnit` ve `TomatoLockedUnit` objeleri oluşturuldu. Her birinin altına `LockedObjects` (çerçeve, coin ikonu, fiyat yazısı) ve `TriggerZone` (collider + script) eklendi.
-
-2. **CashManager'a para harcama sistemi ekledik** — `SpendCoin` ve `TryBuyThisUnit` metodları yazıldı. Player trigger'a girince coin yeterliyse harcama yapılacak şekilde `LockedUnitController` scripti oluşturuldu.
-
-3. **CashManager'daki 3 hatayı düzelttik** — Yeni yazılan metodlarda syntax ve mantık hataları vardı, tek tek giderildi.
-
-4. **TriggerZone'u sahnede konumlandırdık** — Boş bir GameObject, Box Collider (Is Trigger ✅) eklendi. Dükkânın önüne yerleştirildi. OnTriggerEnter'ın yalnızca Collider'ın üzerinde olduğu objede çalıştığını öğrendik, script TriggerZone'a taşındı.
-
-5. **Satın alma çalıştı — coin azaldı, LockedObjects kapandı** ✅
-
-6. **UnlockedObjects içindeki tarlalar görünmedi — hata avcılığı yaptık** — Debug.Log ekleyerek script'in çalıştığını doğruladık. Sorunun Unity SetActive kuralları ve hiyerarşi konumundan kaynaklandığını bulduk.
+Bunun için iki yeni yapı kuruldu:
+1. **`UnlockBakeryUnitController`** → Pastaneyi yönetir (ne istiyor, kaç depoladı)
+2. **`BagController`'da yeni bir trigger bloğu** → Oyuncu pastaneye girince çantayı işler
 
 ---
 
-### 🔧 Düzeltilen Hatalar
+### Kod: Nasıl Çalışıyor?
 
-**CashManager.cs — 3 hata:**
+**Adım 1 — Oyuncu pastaneye girer:**
+`BagController.OnTriggerEnter` tetiklenir. Tag kontrolü: `"UnlockBakeryUnit"`
 
-| # | Hata | Çözüm |
-|---|------|--------|
-| 1 | `SpendCoin()` içinde `price` parametresi yoktu | `SpendCoin(int price)` yapıldı |
-| 2 | `GetCoins()` metodu yoktu | `public int GetCoins()` eklendi |
-| 3 | `TryBuyThisUnit` bazı durumlarda `bool` dönmüyordu | `if` dışına `return false` eklendi |
+**Adım 2 — Pastane ne istiyor?**
+```csharp
+ProductData.ProductType neededType = bakeryunit.GetNeededProductType();
+// → Örneğin: ProductData.ProductType.tomato
+```
 
-Ayrıca `Destroy(instance)` → `Destroy(gameObject)` düzeltildi (Singleton'da yanlış obje yok ediliyordu).
+**Adım 3 — Çantayı tara (tersine döner, silme sırası bozulmasın):**
+```csharp
+for (int i = productDataList.Count - 1; i >= 0; i--)
+{
+    if (productDataList[i].productType == neededType)
+    {
+        if (bakeryunit.StoreProduct()) // pastanede yer var mı?
+        {
+            Destroy(bag.transform.GetChild(i).gameObject); // görseli sil
+            productDataList.RemoveAt(i);                   // veriyi sil
+        }
+    }
+}
+```
+*(Liste **tersine** dönülür çünkü RemoveAt ile eleman silinince indeksler kayar, tersine gidince bu sorun olmaz.)*
+
+**Adım 4 — StoreProduct() ne yapar?**
+```csharp
+public bool StoreProduct()
+{
+    if (maxStoredProductCount == StoredProductCount) return false; // dolu
+    StoredProductCount++;    // sayacı artır
+    DisplayProductCount();   // TMP'yi güncelle → "3/5"
+    return true;
+}
+```
+
+### Unity Inspector Ayarları
+1. Pastane objesine `"UnlockBakeryUnit"` tag'i verilmeli
+2. `UnlockBakeryUnitController` script pastane objesine atılmalı
+3. `bakerytext` alanına 3D TMP sürüklenmeli
+4. `maxStoredProductCount` → kaç ürün alacak (örn. 5)
+5. `productType` → Inspector'dan seçilmeli (tomato vb.)
 
 ---
 
-### 🔑 Bugün Öğrenilen Kritik Unity Kuralları
+## 🎨 Unity UI Trick'leri
 
-**1. Child kapatmak ≠ Parent kapatmak**
-- Parent'ı kapatmak → tüm child'ları da kapatır ✅
-- Parent'ı açmak → kendi başına kapatılmış child'ları AÇMAZ ❌
-- **Kural:** Her zaman child'ı açık bırak, sadece parent'ı kapat/aç!
+### 3D TextMeshPro Sönük/Işıktan Etkilenme Sorunu
+**Sorun:** 3D TMP ekranda soluk/sönük beyaz görünüyor, ışıklandırmadan etkileniyor.
+**Çözüm:** TMP objesindeki Material'in Shader'ını değiştir:
+`TextMeshPro/Distance Field` → `TextMeshPro/Distance Field Overlay`
+Overlay shader ışıktan etkilenmez, metin her zaman parlak ve net görünür.
 
-**2. SetActive sırası önemli!**
-- TriggerZone LockedObjects'in içindeyse; LockedObjects kapanınca TriggerZone da kapanır, script yarım kalır.
-- **Kural:** Önce UnlockedObjects'i aç (`SetActive(true)`), sonra LockedObjects'i kapat!
+### CharacterController Havada Durma Sorunu
+**Sorun:** Play'e basınca karakter hafifçe yerden yüksekte duruyor.
+**Çözüm:** CharacterController → `Center Y` değerini `Height / 2`'ye eşitle.
+Örn: Height = 1.8 → Center Y = 0.9 ~ 1.01 arası dene.
+**Not:** Center X ve Z değerleri modelin pivot offset'ine göre ayarlıdır, sıfırlamaya çalışma!
 
-**3. OnTriggerEnter nerede tetiklenir?**
-- Sadece Collider'ın bulunduğu objede çalışır. Script ve Collider aynı objede olmalı!
-
----
-
-### ⚠️ Çözülemeyen / Sonraya Bırakılan Problem
-- `UnlockedObjects`, `CabbageLockedUnit` içine alınınca tarlalar görünmüyor.
-- **Geçici durum:** Şimdilik çalışır halde bırakıldı, prefab konusu sonraya bırakıldı.
-- **Yapılacak:** `lockedunit` referansının tam olarak neye bağlı olduğu kontrol edilecek (LockedObjects mı, CabbageLockedUnit mi?).
+### Step Offset / Yokuş Hissi
+CharacterController düz zeminde bile bazen "tümsek" hissi verir. Bu `Step Offset` değerinden kaynaklanır (0.3 altı tutulması önerilir). Rahatsız ediyorsa düşür.

@@ -1,3 +1,4 @@
+using System.Collections;   // ← bu eksikti
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
@@ -40,6 +41,31 @@ public class BagController : MonoBehaviour
         SetMaxTextOff();
         Debug.Log("Çanta boşaltıldı ve paralar alındı.");
     }
+    //BAKERY SİSTEMİ
+    if(other.CompareTag("UnlockBakeryUnit"))
+        {
+            UnlockBakeryUnitController bakeryunit=other.GetComponent<UnlockBakeryUnitController>();
+
+            ProductData.ProductType neededType=bakeryunit.GetNeededProductType();
+            for(int i=productDataList.Count-1;i>=0;i--)
+            {
+                if(productDataList[i].productType==neededType) //datalisttteki ürün beklediğim ürün mü karşılaştır ve döndür
+                {
+                    if(bakeryunit.StoreProduct()==true) //yer varsa çantadakileri sil
+                    {
+                    Destroy(bag.transform.GetChild(i).gameObject);
+                    productDataList.RemoveAt(i);
+                    }
+                }
+            
+                ControlBagCapacity();
+                
+            }
+            
+            
+        }
+ 
+
 }
 // 4. Çağırdığın o fonksiyonu buraya tanımlıyoruz ki CashManager ile konuşsun
 private void SellProductToShop(ProductData data)
@@ -132,6 +158,13 @@ private void SellProductToShop(ProductData data)
       public bool IsEmptySpace()  //çantada boş yer varsa dataliste git ve ürün al
     {
         return productDataList.Count < maxBagCapacity;
+ 
     }
+
+
+//ANLATSANA ALTTAKİNİN AMACI NEDİR
+    
+
+
 }
 
