@@ -102,7 +102,44 @@ public bool StoreProduct()
 
 ---
 
-## 🎨 Unity UI Trick'leri
+## 🪙 Coin Spawn Sorunu ve Çözümü (coinGO Null Hatası)
+
+### Sorun Neydi?
+`UnlockBakeryUnitController`'da `coinGO` alanına Inspector'dan **Hierarchy'deki sahne coin objesini** atamıştık.
+Bu obje mavi görünüyordu ama aslında bir **sahne instance**'ıydı (gerçek prefab değil).
+
+**Hata zinciri:**
+1. Pastane coin üretiyor → `Instantiate(coinGO)` ile klon oluşturuyor ✅
+2. Oyuncu sahne coin'ini topluyor → `Destroy(gameObject)` çalışıyor ❌
+3. `coinGO` referansı yok oluyor → ikinci turda `coinGO` null oluyor
+4. `MissingReferenceException` hatası
+
+### Fark Nedir? (Sahne Objesi vs Prefab)
+| | Sahne Objesi (❌) | Project Prefab (✅) |
+|---|---|---|
+| Konumu | Hierarchy'de görünür | Sadece Project panelinde |
+| Silinebilir mi? | Evet, `Destroy()` ile | Hayır, oyun sırasında silinemez |
+| `Instantiate` sonrası | Klon + orijinal sahada | Sadece klon sahada |
+
+### Çözüm: `Resources.Load` Kullanımı
+1. Coin prefabı `Assets/Resources/Coin.prefab` olarak konumlandırıldı
+2. `Awake()`'te `coinGO.scene.IsValid()` ile sahne objesi mi diye kontrol edildi
+3. Sahne objesi atanmışsa → `Resources.Load<GameObject>("Coin")` ile gerçek prefab yüklendi
+
+```csharp
+void Awake()
+{
+    // Sahne objesi mi? → Resources'dan yükle
+    if (coinGO == null || coinGO.scene.IsValid())
+    {
+        coinGO = Resources.Load<GameObject>(coinPrefabName);
+    }
+    _coinCache = coinGO; // Yedek referans
+}
+```
+
+> **Not:** `coinPrefabName` Inspector'dan değiştirilebilir (varsayılan: `"Coin"`).
+> Prefab mutlaka `Assets/Resources/` klasöründe olmalı!
 
 ### 3D TextMeshPro Sönük/Işıktan Etkilenme Sorunu
 **Sorun:** 3D TMP ekranda soluk/sönük beyaz görünüyor, ışıklandırmadan etkileniyor.

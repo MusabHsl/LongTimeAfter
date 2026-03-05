@@ -6,6 +6,8 @@ public class CashManager : MonoBehaviour
     private int coins;
     public static CashManager instance;
 
+    private string keyCoins="keyCoins";
+
     private void   Awake() 
     {
         if(instance==null)
@@ -47,14 +49,21 @@ public class CashManager : MonoBehaviour
 
     public void AddCoin(int price)
     {
-        coins+=price;
-        Debug.Log("cash"+coins);
+        coins += price;
+        Debug.Log("cash" + coins);
         DisplayCoins();
+
+        // AudioManager varsa toplama sesini çal
+        if (AudioManager.instance != null)
+        {
+            AudioManager.instance.PlayCollectSound();
+        }
     }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        LoadCash();
+        DisplayCoins();
     }
 
     // Update is called once per frame
@@ -65,5 +74,16 @@ public class CashManager : MonoBehaviour
     private void DisplayCoins()
     {
         UIManager.instance.ShowCoinCountOnScreen(coins);
+        SaveCash();
+    }
+
+    private void LoadCash()
+    {
+        coins=PlayerPrefs.GetInt(keyCoins,0);
+    }
+
+private void SaveCash()
+    {
+        PlayerPrefs.SetInt(keyCoins,coins);
     }
 }

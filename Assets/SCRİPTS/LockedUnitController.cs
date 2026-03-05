@@ -7,6 +7,7 @@ using UnityEngine;
 public class LockedUnitController : MonoBehaviour
 {
     [Header("Settings")]
+    [SerializeField] private string unitID; // Müfettişten her ünite için benzersiz bir isim verin (Örn: "Farm1", "Bakery")
     [SerializeField] private int price;
     [Header("Objects")]
     [SerializeField] private TextMeshPro pricetext;
@@ -14,22 +15,17 @@ public class LockedUnitController : MonoBehaviour
     [SerializeField] private GameObject unlockedunit;
 
     private bool isPurchased;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+
     void Start()
     {
-        pricetext.text=price.ToString();
+        pricetext.text = price.ToString();
+        LoadStatus();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
     private void OnTriggerEnter(Collider other) 
     {
         if(other.CompareTag("Player") && !isPurchased)
         {
-            //ürünü paran yeterse al
             UnlockUnit();
         }
     }
@@ -39,27 +35,51 @@ public class LockedUnitController : MonoBehaviour
         if(CashManager.instance.TryBuyThisUnit(price))
         {
             Unlock();
+            SaveStatus();
+            
+            // AudioManager varsa kilidi açma sesini çal
+            if (AudioManager.instance != null)
+            {
+                AudioManager.instance.PlayUnlockSound();
+            }
         }
-        //parası varsa kontrol et
-        //varsa aç
     }
 
     private void Unlock()
     {
         isPurchased = true;
-        Debug.Log("Unlock çağrıldı! unlockedunit: " + unlockedunit.name);
-
-        // UnlockedObjects'i aç
         unlockedunit.SetActive(true);
 
-        // Child'lar direkt kapatılmış olabilir, hepsini aç
         foreach (Transform child in unlockedunit.transform)
         {
             child.gameObject.SetActive(true);
-            Debug.Log("Child açıldı: " + child.name);
         }
 
-        // En son LockedObjects'i kapat
         lockedunit.SetActive(false);
+    }
+
+    private void SaveStatus()
+    {
+        PlayerPrefs.SetInt(unitID + "_Purchased", 1);
+        PlayerPrefs.Save();
+        Debug.Log("Ünite Kaydedildi: " + unitID + " - Kayıt Adı: " + unitID + "_Purchased");
+    }
+
+    private void LoadStatus()
+    {
+        if (string.IsNullOrEmpty(unitID))
+        {
+            Debug.LogWarning(gameObject.name + " için unitID atanmamış! Kaydetme çalışmayacak.");
+            return;
+        }
+
+        int status = PlayerPrefs.GetInt(unitID + "_Purchased", 0);
+        Debug.Log("Ünite Yükleniyor: " + unitID + " - Durum: " + status);
+
+        if (status == 1)
+        {
+            Unlock();
+            Debug.Log(unitID + " otomatik olarak açıldı.");
+        }
     }
 }

@@ -44,25 +44,35 @@ public class BagController : MonoBehaviour
     //BAKERY SİSTEMİ
     if(other.CompareTag("UnlockBakeryUnit"))
         {
-            UnlockBakeryUnitController bakeryunit=other.GetComponent<UnlockBakeryUnitController>();
-
-            ProductData.ProductType neededType=bakeryunit.GetNeededProductType();
-            for(int i=productDataList.Count-1;i>=0;i--)
+            UnlockBakeryUnitController bakeryunit = other.GetComponent<UnlockBakeryUnitController>();
+            if(bakeryunit == null)
+                bakeryunit = other.GetComponentInParent<UnlockBakeryUnitController>();
+            if(bakeryunit == null)
+                bakeryunit = other.GetComponentInChildren<UnlockBakeryUnitController>();
+            if(bakeryunit == null)
             {
-                if(productDataList[i].productType==neededType) //datalisttteki ürün beklediğim ürün mü karşılaştır ve döndür
+                Debug.LogError("UnlockBakeryUnitController bulunamadı!");
+                return;
+            }
+
+        ProductData.ProductType neededType = bakeryunit.GetNeededProductType();
+            for(int i = productDataList.Count - 1; i >= 0; i--)
+            {
+                if(productDataList[i].productType == neededType)
                 {
-                    if(bakeryunit.StoreProduct()==true) //yer varsa çantadakileri sil
+                    if(bakeryunit.StoreProduct() == true)
                     {
-                    Destroy(bag.transform.GetChild(i).gameObject);
-                    productDataList.RemoveAt(i);
+                        Transform item = bag.transform.GetChild(i);
+                        item.SetParent(null); // Hiyerarşiden hemen çıkar ki childCount anında güncellensin
+                        Destroy(item.gameObject);
+                        productDataList.RemoveAt(i);
                     }
                 }
-            
-                ControlBagCapacity();
-                
             }
-            
-            
+
+            // Kalan ürünlerin görsellerini yeniden hizala
+            RefreshBagVisuals();
+            ControlBagCapacity();
         }
  
 
@@ -126,6 +136,14 @@ private void SellProductToShop(ProductData data)
         }
     }
 
+    // Çantadaki kalan ürünlerin görsel pozisyonlarını düzeltir
+    private void RefreshBagVisuals()
+    {
+        for (int i = 0; i < bag.childCount; i++)
+        {
+            bag.GetChild(i).localPosition = new Vector3(0, productSize.y * i, 0);
+        }
+    }
 
     public void ControlBagCapacity() //kapas,te kontrolü
     {
